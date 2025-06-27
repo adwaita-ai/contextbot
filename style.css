@@ -1,0 +1,209 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+.stApp {
+    font-family: 'Inter', sans-serif;
+    background: #000000;
+    color: #FFFFFF;
+    overflow-x: hidden;
+}
+
+.main-container {
+    background: #000000;
+    padding: 2rem;
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(15, 64, 58, 0.3);
+    margin: 1rem;
+    animation: slideInRight 1s ease forwards;
+    transition: transform 0.3s ease;
+}
+
+.main-container:hover {
+    transform: translateY(-2px);
+}
+
+@keyframes slideInRight {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding: 2rem;
+    background: linear-gradient(135deg, #0A2C27, #1B746A, #26A69A);
+    border-radius: 15px;
+    color: #FFFFFF;
+    position: relative;
+    border: 2px solid #26A69A;
+    animation: slideInLeft 1s ease forwards;
+}
+
+.header h1 {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+    text-shadow: 2px 2px 4px rgba(10, 44, 39, 0.5);
+    transition: transform 0.3s ease;
+}
+
+.header h1:hover {
+    transform: scale(1.05);
+}
+
+.header p {
+    font-size: 1.2rem;
+    opacity: 0.8;
+    transition: opacity 0.3s ease;
+}
+
+.header p:hover {
+    opacity: 1;
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #26A69A;
+    color: #FFFFFF;
+    transition: border-color 0.3s ease;
+}
+
+.section-header:hover {
+    border-color: #0F403A;
+}
+
+.stButton > button {
+    background: linear-gradient(45deg, #0A2C27, #1B746A, #26A69A);
+    color: #FFFFFF;
+    border: none;
+    padding: 0.75rem 2rem;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+    box-shadow: 0 4px 15px rgba(15, 64, 58, 0.3);
+}
+
+.stButton > button:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 8px 25px rgba(38, 166, 154, 0.4);
+    background: linear-gradient(45deg, #26A69A, #1B746A, #0A2C27);
+}
+
+.stTextArea textarea,
+.stTextInput input {
+    border: 2px solid #26A69A;
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    font-family: inherit;
+    background: #000000;
+    color: #FFFFFF;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.stTextArea textarea:focus,
+.stTextInput input:focus {
+    border-color: #0F403A;
+    box-shadow: 0 0 8px rgba(15, 64, 58, 0.3);
+    outline: none;
+}
+
+.stSuccess {
+    background: linear-gradient(45deg, #0A2C27, #1B746A);
+    color: #FFFFFF;
+    border-radius: 10px;
+    padding: 1rem;
+    border: none;
+    transition: opacity 0.3s ease;
+}
+
+.chat-message {
+    padding: 1rem;
+    margin: 0.5rem 0;
+    border-radius: 15px;
+    max-width: 80%;
+    opacity: 0;
+    animation: fadeIn 0.5s ease forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.user-message {
+    background: linear-gradient(45deg, #0A2C27, #1B746A, #26A69A);
+    color: #FFFFFF;
+    margin-left: auto;
+    text-align: right;
+    border: 1px solid #26A69A;
+    transition: transform 0.3s ease;
+}
+
+.user-message:hover {
+    transform: scale(1.02);
+}
+
+.bot-message {
+    background: #000000;
+    border: 1px solid #26A69A;
+    color: #FFFFFF;
+    transition: box-shadow 0.3s ease;
+}
+
+.bot-message:hover {
+    box-shadow: 0 4px 12px rgba(15, 64, 58, 0.2);
+}
+
+.email-item {
+    background: #000000;
+    padding: 0.75rem;
+    margin: 0.5rem 0;
+    border-radius: 8px;
+    border: 1px solid #26A69A;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #FFFFFF;
+    transition: border-color 0.3s ease;
+}
+
+.email-item:hover {
+    border-color: #0F403A;
+}
+
+#MainMenu, footer, header {
+    visibility: hidden;
+}
+
+.icon {
+    font-size: 1.5rem;
+    margin-right: 0.5rem;
+    color: #26A69A;
+    transition: transform 0.3s ease;
+}
+
+.icon:hover {
+    transform: rotate(10deg);
+}
+
+.footer {
+    text-align: center;
+    margin-top: 3rem;
+    padding: 1rem;
+    background: linear-gradient(135deg, #0A2C27, #1B746A, #26A69A);
+    border-radius: 10px;
+    color: #FFFFFF;
+    animation: slideInLeft 1s ease forwards;
+    transition: transform 0.3s ease;
+}
+
+.footer:hover {
+    transform: translateY(-2px);
+}
+
+@keyframes slideInLeft {
+    from { transform: translateX(-100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}

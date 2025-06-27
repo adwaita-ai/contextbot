@@ -1,0 +1,11 @@
+Q: What services does Acme Corp provide?
+A: Acme Corp provides cloud computing, AI analytics, and data storage solutions.
+
+Q: Where is Acme Corp located?
+A: Acme Corp is located in Bangalore, India.
+
+Q: How can I contact Acme Corp?
+A: Contact support at support@acmecorp.com or call +91-80-1234-5678.
+
+Q: What are the subscription plans for AI analytics?
+A: Basic plan is $99/month, enterprise plan is $499/month.
