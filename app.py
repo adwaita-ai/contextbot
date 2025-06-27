@@ -3,6 +3,7 @@ import re
 import os
 from dotenv import load_dotenv
 import logging
+from huggingface_hub import InferenceClient
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
@@ -11,9 +12,21 @@ logger = logging.getLogger(__name__)
 # Load .env file
 load_dotenv()
 
-# Debug API key loading
-api_key = os.getenv("OPENAI_API_KEY")
-logger.debug(f"Loaded API Key: {api_key[:8]}...{api_key[-4:]}")  # Mask key for safety
+# Debug HF token loading
+hf_token = os.getenv("HF_TOKEN")
+if not hf_token:
+    logger.error("HF_TOKEN not found in environment variables")
+    st.error("❌ HF_TOKEN not found. Please configure it in Streamlit Cloud Secrets or .env file.")
+    st.stop()
+try:
+    client = InferenceClient(token=hf_token)
+    # Test token with a simple request
+    client.text_generation("test", model="meta-llama/Llama-3.2-3B-Instruct")
+    logger.debug("Hugging Face client initialized")
+except Exception as e:
+    logger.error(f"Invalid HF_TOKEN: {e}")
+    st.error(f"❌ Invalid HF_TOKEN: {e}. Please verify the token in Streamlit Cloud Secrets or .env file.")
+    st.stop()
 
 # Page config
 st.set_page_config(page_title="ContextBot", page_icon="🤖", layout="wide")
@@ -26,26 +39,13 @@ try:
 except FileNotFoundError:
     st.warning("style.css not found. Using default styling.")
 
-# Check for API key
-if not api_key:
-    st.error("❌ OPENAI_API_KEY not found in .env file. Please provide a valid API key.")
-    st.stop()
-
-# Import assistant_utils only if API key is set
-from assistant_utils import create_or_get_assistant, ask_assistant, send_email
-
-# Page header
-st.markdown("""
-<div class="header">
-    <h1>🤖 ContextBot</h1>
-    <p>Your Private Context-Locked AI Assistant</p>
-</div>
-""", unsafe_allow_html=True)
+# Import assistant_utils
+from assistant_utils import query_llama, send_email
 
 # Session state initialization
-for key in ["context", "emails", "chat_history", "assistant_id"]:
+for key in ["context", "emails", "chat_history"]:
     if key not in st.session_state:
-        st.session_state[key] = [] if key in ["emails", "chat_history"] else "" if key == "context" else None
+        st.session_state[key] = [] if key in ["emails", "chat_history"] else ""
 
 # Layout
 col1, col2 = st.columns([1, 1])
@@ -64,10 +64,6 @@ with col1:
     if st.button("Save Context", key="save_context"):
         if training_content.strip():
             try:
-                # Only create a new assistant if one doesn't exist
-                if not st.session_state["assistant_id"]:
-                    assistant = create_or_get_assistant(training_content)
-                    st.session_state["assistant_id"] = assistant.id
                 st.session_state["context"] = training_content
                 st.success("✅ Context saved successfully! You can now ask questions.")
             except Exception as e:
@@ -76,8 +72,35 @@ with col1:
         else:
             st.error("Please enter some training content.")
 
-            
-# Right Panel: Chat Interface
+    # Email Capture
+    st.markdown("""
+    <div class="section-header">
+        <span class="icon">✉️</span>
+        <h2>Email Capture</h2>
+    </div>
+    """, unsafe_allow_html=True)
+
+    email_input = st.text_input("Enter an email address:", key="email_input")
+    if st.button("Add Email", key="add_email"):
+        if email_input:
+            if re.match(r"[^@]+@[^@]+\.[^@]+", email_input):
+                if email_input not in st.session_state["emails"]:
+                    st.session_state["emails"].append(email_input)
+                    st.success(f"✅ Email {email_input} added successfully!")
+                else:
+                    st.warning("Email already exists.")
+            else:
+                st.error("Please enter a valid email address.")
+        else:
+            st.error("Please enter an email address.")
+
+    # Display registered emails
+    if st.session_state["emails"]:
+        st.markdown("**Registered Emails:**")
+        for email in st.session_state["emails"]:
+            st.write(f"- {email}")
+
+# Right Panel: Chat
 with col2:
     st.markdown("""
     <div class="section-header">
@@ -86,40 +109,25 @@ with col2:
     </div>
     """, unsafe_allow_html=True)
 
-    if st.session_state["context"] and st.session_state["assistant_id"]:
-        if st.button("🗑️ Clear Chat History", key="clear_chat"):
-            st.session_state["chat_history"] = []
-            st.rerun()
-
-        for chat in st.session_state["chat_history"]:
-            msg_type = chat["type"]
-            msg_content = chat["message"]
-            st.markdown(
-                f"""
-                <div class="chat-message {'user-message' if msg_type == 'user' else 'bot-message'}">
-                    <strong>{'You' if msg_type == 'user' else '🤖 ContextBot'}:</strong> {msg_content}
-                </div>
-                """, unsafe_allow_html=True
-            )
-
-        query = st.text_input("Ask a question based on the training content:", key="chat_input")
-
-        if st.button("📤 Send", key="send_query") and query:
-            st.session_state["chat_history"].append({"type": "user", "message": query})
-            with st.spinner("🤔 Thinking..."):
-                try:
-                    response = ask_assistant(query, st.session_state["context"], st.session_state["assistant_id"])
-                    st.session_state["chat_history"].append({"type": "bot", "message": response})
-                    st.rerun()
-                except Exception as e:
-                    st.error(f"❌ Error: {e}")
-                    logger.error(f"Error querying assistant: {e}")
+    if not st.session_state["context"]:
+        st.warning("Please save training content before chatting.")
     else:
-        st.info("📝 Please save your training content to begin chatting.")
+        user_input = st.text_input("Ask a question:", key="user_input")
+        if st.button("Send", key="send_question"):
+            if user_input:
+                try:
+                    response = query_llama(user_input, st.session_state["context"], st.session_state["emails"], client)
+                    st.session_state["chat_history"].append({"user": user_input, "bot": response})
+                except Exception as e:
+                    st.error(f"Error querying Llama: {e}")
+                    logger.error(f"Error querying Llama: {e}")
+            else:
+                st.error("Please enter a question.")
 
-# Footer
-st.markdown("""
-<div class="footer">
-    <p>© 2025 ContextBot. Powered by OpenAI Assistants API</p>
-</div>
-""", unsafe_allow_html=True)
+        # Display chat history
+        if st.session_state["chat_history"]:
+            st.markdown("**Chat History:**")
+            for chat in st.session_state["chat_history"]:
+                st.markdown(f"**You:** {chat['user']}")
+                st.markdown(f"**Bot:** {chat['bot']}")
+                st.markdown("---")
